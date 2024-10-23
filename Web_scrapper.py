@@ -38,6 +38,11 @@ months = {
 today = f"{current_date.day} de {months[current_date.month]}, {current_date.year}"
 tomorrow_number = current_date + timedelta(days=1)
 next_day= f"{tomorrow_number.day} de {months[tomorrow_number.month]}, {tomorrow_number.year}"
+
+#Now we set the date number for the file name format
+today_file_number = f"{current_date.year-2000}{current_date.month}{current_date.day}"
+tomorrow_file_number = f"{tomorrow_number.year-2000}{tomorrow_number.month}{tomorrow_number.day}"
+
 # Open the URL
 driver.get(url)
 
@@ -54,7 +59,7 @@ try:
     download_link = driver.find_element(By.XPATH, xpath_next_day)
     zip_url = download_link.get_attribute('href')
     print(f"ZIP file download URL: {zip_url}")
-    print(next_day)
+    file_name = 'PRG'+f'{tomorrow_file_number}'+'.xlsx'
 except NoSuchElementException:
     # If tomorrows prediction isn't available yet, we download today's prediction
     try:
@@ -62,10 +67,9 @@ except NoSuchElementException:
         download_link = driver.find_element(By.XPATH, xpath_today)
         zip_url = download_link.get_attribute('href')
         print(f"ZIP file download URL: {zip_url}")
+        file_name = 'PRG'+f'{today_file_number}'+'.xlsx'
     except NoSuchElementException:
         print("No file found for today or tommorrow.")
-        print(next_day)
-        print(today)
         driver.quit()
         exit() 
 
@@ -93,7 +97,8 @@ print(f"Extracted files are located in: {os.getcwd()}")
 
 #Now use pandas to access the extracted file that is relevant to us
 
-file_path = os.path.join(os.getcwd(), 'PRG241023.xlsx')
+
+file_path = os.path.join(os.getcwd(), file_name)
 
 df = pd.read_excel(file_path)
 
