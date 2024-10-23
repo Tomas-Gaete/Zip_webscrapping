@@ -2,6 +2,7 @@ import os
 import zipfile
 import glob
 import time
+import pandas as pd
 from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -86,3 +87,27 @@ with zipfile.ZipFile(latest_file, 'r') as zip_ref:
     print("Extraction complete.")
 
 print(f"Extracted files are located in: {os.getcwd()}")
+
+# Delete the .zip file
+##
+
+#Now use pandas to access the extracted file that is relevant to us
+
+file_path = os.path.join(os.getcwd(), 'PRG241023.xlsx')
+
+df = pd.read_excel(file_path)
+
+#for i in range (len(df.columns)):
+#  df.columns[i] = f"Column{i}" # Add actual names
+df.columns = [f"Column{i}" for i in range(len(df.columns))]
+
+specific_row = df[df['Column3'] == 'CNavia220']
+print("")
+print(df.columns)
+print(specific_row)
+
+if not specific_row.empty:
+    value = specific_row['Column28'].values[0]  # Replace 'Data' with the column you're interested in
+    print(f"El costo marginal promedio de cerronavia es: {value}")
+else:
+    print("No data found for the specified condition.")
