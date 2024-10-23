@@ -1,4 +1,6 @@
 import os
+import zipfile
+import glob
 import time
 from datetime import datetime, timedelta
 from selenium import webdriver
@@ -74,3 +76,13 @@ download_link.click()
 time.sleep(10)
 # Close the browser
 driver.quit()
+
+#Now we extract the latest downloaded file wich is the desired zip file
+list_of_files = glob.glob(os.path.join(os.getcwd(), "*.zip"))  # List all .zip files
+latest_file = max(list_of_files, key=os.path.getctime)
+
+with zipfile.ZipFile(latest_file, 'r') as zip_ref:
+    zip_ref.extractall(os.getcwd())
+    print("Extraction complete.")
+
+print(f"Extracted files are located in: {os.getcwd()}")
