@@ -1,5 +1,5 @@
 # Zip_webscrapping
-Webscrapping to download a zipped .xlsx file and extract information.
+Webscrapping to download a zipped .xlsx file and extract information from chilean national electricity coordinator.
 
 Before following this instructions consider that this asumes you have either cloned this repository or downloaded the python file.
 
@@ -21,4 +21,4 @@ Optional: Type chromedriver on bash, cmd or any console and if you get a message
 
 To run the Web_scrapper.py file type this into the console: python Web_scrapper.py
 
-After the code has been run you should end up with the extracted excel files and a print with the desired information.
+After the code has been run you should end up with the extracted excel files and a report corresponding to the date of the predicted costs.

@@ -59,6 +59,7 @@ try:
     download_link = driver.find_element(By.XPATH, xpath_next_day)
     zip_url = download_link.get_attribute('href')
     file_name = 'PRG'+f'{tomorrow_file_number}'+'.xlsx'
+    Report = f"{next_day}"
 except NoSuchElementException:
     # If tomorrows prediction isn't available yet, we download today's prediction
     try:
@@ -66,6 +67,7 @@ except NoSuchElementException:
         download_link = driver.find_element(By.XPATH, xpath_today)
         zip_url = download_link.get_attribute('href')
         file_name = 'PRG'+f'{today_file_number}'+'.xlsx'
+        Report = f"{today}"
     except NoSuchElementException:
         print("No file found for today or tommorrow.")
         driver.quit()
@@ -108,14 +110,15 @@ print("")
 if not specific_row.empty:
     cost = specific_row['Column28'].values[0]
     print(f"El costo marginal promedio de cerronavia es: {cost}")
-    with open(f"Reporte{today}.txt", "w") as file:
+    with open(f"Reporte{Report}.txt", "w") as file:
         file.write(f"Los Costos marginales para cerro Navia serán los siguientes:\n\n\n")
         for i in range(4, 28):
             value = specific_row.iloc[0, i]  # Use .iloc to access the value in the row
             #print(f"El costo de la hora {i-3} para cerronavia será: {value}")
             #print("")
             file.write(f"El costo de la hora {i-3} para la central será: {value}\n\n")
-        file.write(f"Finalmente, el costo marginal promedio de cerro Navia es: {cost}")
+        file.write(f"Finalmente, el costo marginal promedio de cerro Navia es: {cost}\n\n\n")
+        file.write(f"====================================================================================================\n\n\n")
 else:
     print("No data found for the specified condition.")
 
@@ -129,7 +132,7 @@ if not desired_row.empty:
     cmg = desired_row['Column28'].values[0]
     print(f"El costo marginal promedio de la central especificada es: {cmg}")
     print("")
-    with open(f"{desired_data}.txt", "w") as file:
+    with open(f"Reporte{Report}.txt", "a") as file:
         file.write(f"Los Costos marginales para la central {desired_data} serán los siguientes:\n\n\n")
         for i in range(4, 28):
             value = desired_row.iloc[0, i]  
