@@ -8,11 +8,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
-
 current_directory = os.path.dirname(os.path.abspath(__file__))
 #get today's date
 current_date = datetime.now()
-
 # Set Chrome options to automatically download files to the script's directory
 chrome_options = webdriver.ChromeOptions()
 prefs = {
@@ -93,29 +91,48 @@ print(f"Extracted files are located in: {os.getcwd()}")
 
 #Now use pandas to access the extracted file that is relevant to us
 
-
 file_path = os.path.join(os.getcwd(), file_name)
 
-df = pd.read_excel(file_path)
+try:
+    df = pd.read_excel(file_path)
+except FileNotFoundError:
+    found = False
+    for i in range(1, 10):
+        file_name = 'PRG' + f'{tomorrow_file_number}-{i}' + '.xlsx'
+        file_path = os.path.join(os.getcwd(), file_name)
+        try:
+            df = pd.read_excel(file_path)
+            found = True
+            break
+        except FileNotFoundError:
+            continue
+    if not found:
+        for i in range(1, 10):
+            file_name = f'PRG{today_file_number}-{i}.xlsx'
+            file_path = os.path.join(os.getcwd(), file_name)
+            try:
+                df = pd.read_excel(file_path)
+                found = True
+                break
+            except FileNotFoundError:
+                continue  # Continue to the next alternative file name
 
-#for i in range (len(df.columns)):
-#  df.columns[i] = f"Column{i}" # Add actual names
+    # If no file is found after all attempts, print an error and exit
+    if not found:
+        print("All alternative file names for today and tomorrow were not found. Exiting the program.")
+        exit()
+
 df.columns = [f"Column{i}" for i in range(len(df.columns))]
 
-#Ask the user for a input of the name of the specific power plant
 specific_row = df[df['Column3'] == 'CNavia220']
 
-print("")
-#print(specific_row)
 if not specific_row.empty:
     cost = specific_row['Column28'].values[0]
     print(f"El costo marginal promedio de cerronavia es: {cost}")
     with open(f"Reporte{Report}.txt", "w") as file:
         file.write(f"Los Costos marginales para cerro Navia serán los siguientes:\n\n\n")
         for i in range(4, 28):
-            value = specific_row.iloc[0, i]  # Use .iloc to access the value in the row
-            #print(f"El costo de la hora {i-3} para cerronavia será: {value}")
-            #print("")
+            value = specific_row.iloc[0, i]
             file.write(f"El costo de la hora {i-3} para la central será: {value}\n\n")
         file.write(f"Finalmente, el costo marginal promedio de cerro Navia es: {cost}\n\n\n")
         file.write(f"====================================================================================================\n\n\n")
