@@ -108,10 +108,14 @@ print("")
 if not specific_row.empty:
     cost = specific_row['Column28'].values[0]
     print(f"El costo marginal promedio de cerronavia es: {cost}")
-    for i in range(4, 28):
-        value = specific_row.iloc[0, i]  # Use .iloc to access the value in the row
-        print(f"El costo de la hora {i-3} para cerronavia será: {value}")
-        print("")
+    with open(f"Reporte{today}.txt", "w") as file:
+        file.write(f"Los Costos marginales para cerro Navia serán los siguientes:\n\n\n")
+        for i in range(4, 28):
+            value = specific_row.iloc[0, i]  # Use .iloc to access the value in the row
+            #print(f"El costo de la hora {i-3} para cerronavia será: {value}")
+            #print("")
+            file.write(f"El costo de la hora {i-3} para la central será: {value}\n\n")
+        file.write(f"Finalmente, el costo marginal promedio de cerro Navia es: {cost}")
 else:
     print("No data found for the specified condition.")
 
@@ -125,9 +129,13 @@ if not desired_row.empty:
     cmg = desired_row['Column28'].values[0]
     print(f"El costo marginal promedio de la central especificada es: {cmg}")
     print("")
-    for i in range(4, 28):
-        value = desired_row.iloc[0, i]  
-        print(f"El costo de la hora {i-3} para la central será: {value}")
-        print("")
+    with open(f"{desired_data}.txt", "w") as file:
+        file.write(f"Los Costos marginales para la central {desired_data} serán los siguientes:\n\n\n")
+        for i in range(4, 28):
+            value = desired_row.iloc[0, i]  
+            #print(f"El costo de la hora {i-3} para la central será: {value}")
+            #print("")
+            file.write(f"El costo de la hora {i-3} para la central será: {value}\n\n")
+        file.write(f"Finalmente, el costo marginal promedio de la central especificada es: {cmg}")
 else:
     print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
