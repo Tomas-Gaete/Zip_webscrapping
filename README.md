@@ -19,4 +19,6 @@ Optional: Type chromedriver on bash, cmd or any console and if you get a message
 
 5. Open a terminal or console in the folder containing this repository or the .py file with the code for the webscraping and run it.
 
-To run the Example.py file type this into the console: python Example.py
+To run the Web_scrapper.py file type this into the console: python Web_scrapper.py
+
+After the code has been run you should end up with the extracted excel files and a print with the desired information.

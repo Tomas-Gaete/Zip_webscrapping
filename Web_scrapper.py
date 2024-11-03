@@ -39,9 +39,9 @@ today = f"{current_date.day} de {months[current_date.month]}, {current_date.year
 tomorrow_number = current_date + timedelta(days=1)
 next_day= f"{tomorrow_number.day} de {months[tomorrow_number.month]}, {tomorrow_number.year}"
 
-#Now we set the date number for the file name format
-today_file_number = f"{current_date.year-2000}{current_date.month}{current_date.day}"
-tomorrow_file_number = f"{tomorrow_number.year-2000}{tomorrow_number.month}{tomorrow_number.day}"
+#Now we set the date number for the file name format (YYMMDD having only 2 digits for the year)
+today_file_number = f"{current_date.year-2000}{current_date.month:02}{current_date.day:02}"
+tomorrow_file_number = f"{tomorrow_number.year-2000}{tomorrow_number.month:02}{tomorrow_number.day:02}"
 
 # Open the URL
 driver.get(url)
@@ -58,7 +58,6 @@ try:
     xpath_next_day = f"//span[contains(text(), 'Programa de Operación y Lista de Prioridades')]/following::span[contains(text(), \"{next_day}\")]/following::a[contains(@href, '.zip')]"
     download_link = driver.find_element(By.XPATH, xpath_next_day)
     zip_url = download_link.get_attribute('href')
-    print(f"ZIP file download URL: {zip_url}")
     file_name = 'PRG'+f'{tomorrow_file_number}'+'.xlsx'
 except NoSuchElementException:
     # If tomorrows prediction isn't available yet, we download today's prediction
@@ -66,7 +65,6 @@ except NoSuchElementException:
         xpath_today = f"//span[contains(text(), 'Programa de Operación y Lista de Prioridades')]/following::span[contains(text(), \"{today}\")]/following::a[contains(@href, '.zip')]"
         download_link = driver.find_element(By.XPATH, xpath_today)
         zip_url = download_link.get_attribute('href')
-        print(f"ZIP file download URL: {zip_url}")
         file_name = 'PRG'+f'{today_file_number}'+'.xlsx'
     except NoSuchElementException:
         print("No file found for today or tommorrow.")
@@ -78,22 +76,18 @@ except NoSuchElementException:
 download_link.click()
 
 #wait for the download to finish before closing the browser
-time.sleep(10)
+time.sleep(6)
 # Close the browser
 driver.quit()
 
 #Now we extract the latest downloaded file wich is the desired zip file
-list_of_files = glob.glob(os.path.join(os.getcwd(), "*.zip"))  # List all .zip files
+list_of_files = glob.glob(os.path.join(os.getcwd(), "*.zip"))
 latest_file = max(list_of_files, key=os.path.getctime)
 
 with zipfile.ZipFile(latest_file, 'r') as zip_ref:
     zip_ref.extractall(os.getcwd())
     print("Extraction complete.")
-
 print(f"Extracted files are located in: {os.getcwd()}")
-
-# Delete the .zip file
-##
 
 #Now use pandas to access the extracted file that is relevant to us
 
@@ -106,13 +100,34 @@ df = pd.read_excel(file_path)
 #  df.columns[i] = f"Column{i}" # Add actual names
 df.columns = [f"Column{i}" for i in range(len(df.columns))]
 
+#Ask the user for a input of the name of the specific power plant
 specific_row = df[df['Column3'] == 'CNavia220']
-print("")
-print(df.columns)
-print(specific_row)
 
+print("")
+#print(specific_row)
 if not specific_row.empty:
-    value = specific_row['Column28'].values[0]  # Replace 'Data' with the column you're interested in
-    print(f"El costo marginal promedio de cerronavia es: {value}")
+    cost = specific_row['Column28'].values[0]
+    print(f"El costo marginal promedio de cerronavia es: {cost}")
+    for i in range(4, 28):
+        value = specific_row.iloc[0, i]  # Use .iloc to access the value in the row
+        print(f"El costo de la hora {i-3} para cerronavia será: {value}")
+        print("")
 else:
     print("No data found for the specified condition.")
+
+print("")
+print("")
+desired_data = input("Ingrese el nombre de la central que desea consultar: ")
+desired_row = df[df['Column3'] == desired_data]
+#print(desired_row)
+print("")
+if not desired_row.empty:
+    cmg = desired_row['Column28'].values[0]
+    print(f"El costo marginal promedio de la central especificada es: {cmg}")
+    print("")
+    for i in range(4, 28):
+        value = desired_row.iloc[0, i]  
+        print(f"El costo de la hora {i-3} para la central será: {value}")
+        print("")
+else:
+    print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
