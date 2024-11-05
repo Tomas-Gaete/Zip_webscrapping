@@ -7,8 +7,10 @@ from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from fpdf import FPDF
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
+
 #get today's date
 current_date = datetime.now()
 # Set Chrome options to automatically download files to the script's directory
@@ -80,6 +82,32 @@ time.sleep(6)
 # Close the browser
 driver.quit()
 
+class PDFReport(FPDF):
+    def header(self):
+        self.set_font("Times", "B", 12)
+        self.cell(0, 10, f"Reporte: {Report}", 0, 1, "C")
+        self.ln(10)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Times", "I", 8)
+        self.cell(0, 10, "Page " + str(self.page_no()), 0, 0, "C")
+
+def add_central_data_to_pdf(pdf, central_name, data_row):
+    pdf.set_font("Times", "B", 12)
+    pdf.cell(0, 10, f"Central: {central_name}", 0, 1)
+    pdf.ln(5)
+
+    pdf.set_font("Times", "", 10)
+    for i in range(4, 28):
+        value = data_row.iloc[0, i]
+        pdf.cell(0, 10, f"El costo de la hora {i-3} para la central será: {value}", 0, 1)
+    
+    average_cost = data_row['Column28'].values[0]
+    pdf.ln(5)
+    pdf.set_font("Times", "B", 10)
+    pdf.cell(0, 10, f"El costo marginal promedio de {central_name} es: {average_cost}", 0, 1)
+    pdf.ln(10)
 #Now we extract the latest downloaded file wich is the desired zip file
 list_of_files = glob.glob(os.path.join(os.getcwd(), "*.zip"))
 latest_file = max(list_of_files, key=os.path.getctime)
@@ -88,6 +116,14 @@ with zipfile.ZipFile(latest_file, 'r') as zip_ref:
     zip_ref.extractall(os.getcwd())
     print("Extraction complete.")
 print(f"Extracted files are located in: {os.getcwd()}")
+
+pdf = PDFReport()
+pdf.set_auto_page_break(auto=True, margin=15)
+pdf.add_page()
+current_directory = os.path.dirname(os.path.abspath(__file__))
+pdf.set_font("Times", "B", 16)
+pdf.cell(0, 10, "Reporte de Costos Marginales", 0, 1, "C")
+pdf.ln(10)
 
 #Now use pandas to access the extracted file that is relevant to us
 
@@ -129,6 +165,7 @@ specific_row = df[df['Column3'] == 'CNavia220']
 if not specific_row.empty:
     cost = specific_row['Column28'].values[0]
     print(f"El costo marginal promedio de cerronavia es: {cost}")
+    add_central_data_to_pdf(pdf, "Cerro Navia", specific_row)
     with open(f"Reporte{Report}.txt", "w") as file:
         file.write(f"Los Costos marginales para cerro Navia serán los siguientes:\n\n\n")
         for i in range(4, 28):
@@ -148,6 +185,7 @@ print("")
 if not desired_row.empty:
     cmg = desired_row['Column28'].values[0]
     print(f"El costo marginal promedio de la central especificada es: {cmg}")
+    add_central_data_to_pdf(pdf, desired_data, desired_row)
     print("")
     with open(f"Reporte{Report}.txt", "a") as file:
         file.write(f"Los Costos marginales para la central {desired_data} serán los siguientes:\n\n\n")
@@ -159,3 +197,6 @@ if not desired_row.empty:
         file.write(f"Finalmente, el costo marginal promedio de la central especificada es: {cmg}")
 else:
     print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
+
+pdf_file_name = f"Reporte_{Report.replace(' ', '_')}.pdf"
+pdf.output(pdf_file_name)
