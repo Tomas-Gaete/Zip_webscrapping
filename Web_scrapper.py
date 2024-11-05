@@ -36,8 +36,11 @@ months = {
 
 # we create strings for automatic webscrapping
 today = f"{current_date.day} de {months[current_date.month]}, {current_date.year}"
+today_excel = f"{current_date.day}_de_{months[current_date.month]}_{current_date.year}"
 tomorrow_number = current_date + timedelta(days=1)
 next_day= f"{tomorrow_number.day} de {months[tomorrow_number.month]}, {tomorrow_number.year}"
+next_day_excel= f"{tomorrow_number.day}_de_{months[tomorrow_number.month]}_{tomorrow_number.year}"
+
 
 #Now we set the date number for the file name format (YYMMDD having only 2 digits for the year)
 today_file_number = f"{current_date.year-2000}{current_date.month:02}{current_date.day:02}"
@@ -60,6 +63,7 @@ try:
     zip_url = download_link.get_attribute('href')
     file_name = 'PRG'+f'{tomorrow_file_number}'+'.xlsx'
     Report = f"{next_day}"
+    Report_excel = f"{next_day_excel}"
 except NoSuchElementException:
     # If tomorrows prediction isn't available yet, we download today's prediction
     try:
@@ -68,6 +72,7 @@ except NoSuchElementException:
         zip_url = download_link.get_attribute('href')
         file_name = 'PRG'+f'{today_file_number}'+'.xlsx'
         Report = f"{today}"
+        Report_excel = f"{today_excel}"
     except NoSuchElementException:
         print("No file found for today or tommorrow.")
         driver.quit()
@@ -103,7 +108,7 @@ def add_central_data_to_pdf(pdf, central_name, data_row):
         value = data_row.iloc[0, i]
         pdf.cell(0, 10, f"El costo de la hora {i-3} para la central será: {value}", 0, 1)
     
-    average_cost = data_row['Column28'].values[0]
+    average_cost = data_row['Hora 24'].values[0]
     pdf.ln(5)
     pdf.set_font("Times", "B", 10)
     pdf.cell(0, 10, f"El costo marginal promedio de {central_name} es: {average_cost}", 0, 1)
@@ -111,11 +116,17 @@ def add_central_data_to_pdf(pdf, central_name, data_row):
 #Now we extract the latest downloaded file wich is the desired zip file
 list_of_files = glob.glob(os.path.join(os.getcwd(), "*.zip"))
 latest_file = max(list_of_files, key=os.path.getctime)
-
 with zipfile.ZipFile(latest_file, 'r') as zip_ref:
     zip_ref.extractall(os.getcwd())
     print("Extraction complete.")
 print(f"Extracted files are located in: {os.getcwd()}")
+#save extracted excel file paths to delete later
+extracted_files = [os.path.join(os.getcwd(), name) for name in zip_ref.namelist()]
+
+#if zip file still exists delete it
+if os.path.exists(latest_file):
+    os.remove(latest_file)
+    print(f"Deleted ZIP file: {latest_file}")
 
 pdf = PDFReport()
 pdf.set_auto_page_break(auto=True, margin=15)
@@ -160,10 +171,19 @@ except FileNotFoundError:
 
 df.columns = [f"Column{i}" for i in range(len(df.columns))]
 
-specific_row = df[df['Column3'] == 'CNavia220']
+df.rename(columns={"Column3": "Central"}, inplace=True)
+df.rename(columns={"Column28": "Promedio Cmg"}, inplace=True)
+
+hour_columns = {f"Column{i}": f"Hora {i-3}" for i in range(4, 28)}
+
+df.rename(columns=hour_columns, inplace=True)
+
+selected_rows = pd.DataFrame()
+specific_row = df[df['Central'] == 'CNavia220']
 
 if not specific_row.empty:
-    cost = specific_row['Column28'].values[0]
+    cost = specific_row['Promedio Cmg'].values[0]
+    selected_rows = pd.concat([selected_rows, specific_row.iloc[:, 3:29]])
     print(f"El costo marginal promedio de cerronavia es: {cost}")
     add_central_data_to_pdf(pdf, "Cerro Navia", specific_row)
     with open(f"Reporte{Report}.txt", "w") as file:
@@ -179,11 +199,12 @@ else:
 print("")
 print("")
 desired_data = input("Ingrese el nombre de la central que desea consultar: ")
-desired_row = df[df['Column3'] == desired_data]
+desired_row = df[df['Central'] == desired_data]
 #print(desired_row)
 print("")
 if not desired_row.empty:
-    cmg = desired_row['Column28'].values[0]
+    cmg = desired_row['Promedio Cmg'].values[0]
+    selected_rows = pd.concat([selected_rows, desired_row.iloc[:, 3:29]])
     print(f"El costo marginal promedio de la central especificada es: {cmg}")
     add_central_data_to_pdf(pdf, desired_data, desired_row)
     print("")
@@ -198,5 +219,12 @@ if not desired_row.empty:
 else:
     print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
 
-pdf_file_name = f"Reporte_{Report.replace(' ', '_')}.pdf"
+pdf_file_name = f"Reporte {Report}.pdf"
 pdf.output(pdf_file_name)
+excel_file_name = f"Costos_Marginales_{Report_excel}.xlsx"
+selected_rows.to_excel(excel_file_name, index=False)
+print(f"Data exported to {excel_file_name}")
+
+for file in extracted_files:
+    if os.path.exists(file):
+        os.remove(file)
