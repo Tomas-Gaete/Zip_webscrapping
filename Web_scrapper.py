@@ -50,11 +50,11 @@ tomorrow_file_number = f"{tomorrow_number.year-2000}{tomorrow_number.month:02}{t
 driver.get(url)
 
 # Wait for the page to load completely (optional, useful for dynamic content)
-driver.implicitly_wait(5)
-
+time.sleep(10)
 #Clicks read more button to show the download links if it isn't in the 4 top links
 read_more = driver.find_element(By.CSS_SELECTOR, "#readMore_btn")
 read_more.click()
+time.sleep(10)
 
 #Now we set the link to start the download
 try:
@@ -221,10 +221,19 @@ else:
 
 pdf_file_name = f"Reporte {Report}.pdf"
 pdf.output(pdf_file_name)
-excel_file_name = f"Costos_Marginales_{Report_excel}.xlsx"
-selected_rows.to_excel(excel_file_name, index=False)
-print(f"Data exported to {excel_file_name}")
 
+# Ahora transponemos la data para tener 1 columna por central
+df_T = selected_rows.T
+row_titles = ["Centrales"]  # Título inicial
+row_titles += [f"Hora {i}" for i in range(1, 25)]  # Agregar "Hora 1" a "Hora 24"
+row_titles.append("Costo Marginal Promedio")#Genera los informes
+df_T.rename(columns=df.iloc[0], inplace = True)
+
+df_T.insert(0, "Centrales", row_titles)
+excel_file_name = f"Costos_Marginales_{Report_excel}.xlsx"
+df_T.to_excel(excel_file_name, index=False)
+print(f"Data exported to {excel_file_name}")
+#Borra los archivos extraídos
 for file in extracted_files:
     if os.path.exists(file):
         os.remove(file)
