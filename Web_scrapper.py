@@ -224,7 +224,7 @@ pdf.output(pdf_file_name)
 
 # Ahora transponemos la data para tener 1 columna por central
 df_T = selected_rows.T
-row_titles = ["Centrales"]  # Título inicial
+row_titles = ["Datos"]  # Título inicial
 row_titles += [f"Hora {i}" for i in range(1, 25)]  # Agregar "Hora 1" a "Hora 24"
 row_titles.append("Costo Marginal Promedio")#Genera los informes
 df_T.rename(columns=df.iloc[0], inplace = True)
