@@ -186,13 +186,6 @@ if not specific_row.empty:
     selected_rows = pd.concat([selected_rows, specific_row.iloc[:, 3:29]])
     print(f"El costo marginal promedio de cerronavia es: {cost}")
     add_central_data_to_pdf(pdf, "Cerro Navia", specific_row)
-    with open(f"Reporte{Report}.txt", "w") as file:
-        file.write(f"Los Costos marginales para cerro Navia serán los siguientes:\n\n\n")
-        for i in range(4, 28):
-            value = specific_row.iloc[0, i]
-            file.write(f"El costo de la hora {i-3} para la central será: {value}\n\n")
-        file.write(f"Finalmente, el costo marginal promedio de cerro Navia es: {cost}\n\n\n")
-        file.write(f"====================================================================================================\n\n\n")
 else:
     print("No data found for the specified condition.")
 
@@ -208,14 +201,6 @@ if not desired_row.empty:
     print(f"El costo marginal promedio de la central especificada es: {cmg}")
     add_central_data_to_pdf(pdf, desired_data, desired_row)
     print("")
-    with open(f"Reporte{Report}.txt", "a") as file:
-        file.write(f"Los Costos marginales para la central {desired_data} serán los siguientes:\n\n\n")
-        for i in range(4, 28):
-            value = desired_row.iloc[0, i]  
-            #print(f"El costo de la hora {i-3} para la central será: {value}")
-            #print("")
-            file.write(f"El costo de la hora {i-3} para la central será: {value}\n\n")
-        file.write(f"Finalmente, el costo marginal promedio de la central especificada es: {cmg}")
 else:
     print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
 
