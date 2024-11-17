@@ -22,6 +22,11 @@ prefs = {
     "safebrowsing.enabled": True  # Enable safe browsing
 }
 chrome_options.add_experimental_option("prefs", prefs)
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--remote-debugging-port=9222")
 
 driver = webdriver.Chrome(options=chrome_options)
 url = "https://www.coordinador.cl/operacion/documentos/programas-de-operacion-2021/"
@@ -191,18 +196,18 @@ else:
 
 print("")
 print("")
-desired_data = input("Ingrese el nombre de la central que desea consultar: ")
-desired_row = df[df['Central'] == desired_data]
+#desired_data = input("Ingrese el nombre de la central que desea consultar: ")
+#desired_row = df[df['Central'] == desired_data]
 #print(desired_row)
-print("")
-if not desired_row.empty:
-    cmg = desired_row['Promedio Cmg'].values[0]
-    selected_rows = pd.concat([selected_rows, desired_row.iloc[:, 3:29]])
-    print(f"El costo marginal promedio de la central especificada es: {cmg}")
-    add_central_data_to_pdf(pdf, desired_data, desired_row)
-    print("")
-else:
-    print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
+#print("")
+#if not desired_row.empty:
+#    cmg = desired_row['Promedio Cmg'].values[0]
+#    selected_rows = pd.concat([selected_rows, desired_row.iloc[:, 3:29]])
+#    print(f"El costo marginal promedio de la central especificada es: {cmg}")
+#    add_central_data_to_pdf(pdf, desired_data, desired_row)
+#    print("")
+#else:
+#    print("No se encontro data de la central especificada, asegurese de haber ingresado el nombre correcto.")
 
 pdf_file_name = f"Reporte {Report}.pdf"
 pdf.output(pdf_file_name)
@@ -215,9 +220,16 @@ row_titles.append("Costo Marginal Promedio")#Genera los informes
 df_T.rename(columns=df.iloc[0], inplace = True)
 
 df_T.insert(0, "Centrales", row_titles)
-excel_file_name = f"Costos_Marginales_{Report_excel}.xlsx"
+# Crear un directorio de salida
+output_directory = os.path.join(current_directory, "output")
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
+
+# Define el nombre del archivo Excel en el directorio de salida
+excel_file_name = os.path.join(output_directory, f"Costos_Marginales_{Report_excel}.xlsx")
 df_T.to_excel(excel_file_name, index=False)
 print(f"Data exported to {excel_file_name}")
+
 #Borra los archivos extraídos
 for file in extracted_files:
     if os.path.exists(file):

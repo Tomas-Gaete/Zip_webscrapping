@@ -22,3 +22,26 @@ Optional: Type `chromedriver` on bash, cmd or any console and if you get a messa
 To run the `Web_scrapper.py` file type this into the console: `python Web_scrapper.py`
 
 After the code has been run you should end up with the extracted excel files and a report corresponding to the date of the predicted costs.
+
+## Using Docker
+
+If you prefer to run the program with Docker, follow these steps:
+
+### 1. Install Docker Desktop
+- Download and install Docker Desktop from [this page](https://www.docker.com/products/docker-desktop/).
+- Follow the installation instructions for your operating system.
+- After installation, ensure Docker is running.
+
+### 2. Pull the Docker Image
+- Open a terminal and run:
+  docker pull aliturriaga/web-scraper:latest
+### 3. Run the Image
+Open Docker Desktop.
+Go to the "Images" tab and find aliturriaga/web-scraper:latest.
+Click on Run.
+### 4. Configure Volumes
+When running the container, configure the volume to save the Excel files:
+Host Path: Select the folder on your machine where you want the Excel files to be saved (e.g., C:\Users\YourUser\Downloads\output).
+Container Path: Set this to /app/output.
+### 5. Check the Results
+After the container finishes running, the Excel files and reports will be saved in the folder you selected as the Host Path.
