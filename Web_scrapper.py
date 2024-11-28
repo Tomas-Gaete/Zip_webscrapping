@@ -4,10 +4,13 @@ import glob
 import time
 import pandas as pd
 from datetime import datetime, timedelta
+from fpdf import FPDF
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-from fpdf import FPDF
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service  # Import the Service class
+
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,19 +19,19 @@ current_date = datetime.now()
 # Set Chrome options to automatically download files to the script's directory
 chrome_options = webdriver.ChromeOptions()
 prefs = {
-    "download.default_directory": current_directory,  # Set to the script's directory
-    "download.prompt_for_download": False,  # Disable download prompt
+    "download.default_directory": current_directory,
+    "download.prompt_for_download": False,
     "directory_upgrade": True,
-    "safebrowsing.enabled": True  # Enable safe browsing
+    "safebrowsing.enabled": True,
 }
 chrome_options.add_experimental_option("prefs", prefs)
-chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--remote-debugging-port=9222")
 
-driver = webdriver.Chrome(options=chrome_options)
+# Automatically manage ChromeDriver
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 url = "https://www.coordinador.cl/operacion/documentos/programas-de-operacion-2021/"
 
 #assing respective number to months to match website dates for webscrapping
