@@ -25,13 +25,21 @@ prefs = {
     "safebrowsing.enabled": True,
 }
 chrome_options.add_experimental_option("prefs", prefs)
+#chrome_options.add_argument("--headless")  # Run without a GUI
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--remote-debugging-port=9222")
 
+# Check if the script is running in Docker
+if os.getenv("USE_DOCKER_CHROMEDRIVER"):
+    # Use the pre-installed ChromeDriver in Docker
+    service = Service("/usr/local/bin/chromedriver")  # Path to ChromeDriver in Docker
+else:
+    # Use ChromeDriverManager for local execution
+    service = Service(ChromeDriverManager().install())
 # Automatically manage ChromeDriver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+driver = webdriver.Chrome(service=service, options=chrome_options)
 url = "https://www.coordinador.cl/operacion/documentos/programas-de-operacion-2021/"
 
 #assing respective number to months to match website dates for webscrapping

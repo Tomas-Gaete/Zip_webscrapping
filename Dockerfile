@@ -1,45 +1,32 @@
-# Usa una imagen base de Python con soporte para Selenium
 FROM python:3.10-slim
 
-# Establecer directorio de trabajo dentro del contenedor
-WORKDIR /app
-
-# Crea el directorio de salida en la imagen Docker
-RUN mkdir -p /app/output
-
-# Copia los archivos necesarios a la imagen
-COPY . .
-
-# Instala las dependencias necesarias para Chrome y Selenium
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    wget \
-    unzip \
-    xvfb \
-    libnss3 \
-    libgconf-2-4 \
-    libxi6 \
-    libxrender1 \
-    --no-install-recommends && apt-get clean
+    wget unzip curl xvfb libxi6 libgconf-2-4 libnss3 libasound2 fonts-liberation libappindicator3-1 xdg-utils gpg \
+    && apt-get clean
 
-# Descarga e instala Google Chrome
-RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && dpkg -i google-chrome-stable_current_amd64.deb || apt-get -fy install \
-    && rm google-chrome-stable_current_amd64.deb
+# Install Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable
 
-# Descarga la versión específica de Chromedriver para Linux
-RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.69/linux64/chromedriver-linux64.zip \
+# Install ChromeDriver
+RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') && \
+    wget -q https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip \
     && unzip chromedriver-linux64.zip -d /usr/local/bin/ \
     && mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
     && chmod +x /usr/local/bin/chromedriver \
     && rm -rf chromedriver-linux64.zip /usr/local/bin/chromedriver-linux64
 
-# Instala dependencias de Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
+# Set working directory
+WORKDIR /app
 
-# Comando por defecto para ejecutar el script
-CMD ["python", "Web_scrapper.py"]
+# Copy the application
+COPY . /app
 
-
-
-
+# Default command to run the script
+CMD ["xvfb-run", "-a", "python", "Web_scrapper.py"]
