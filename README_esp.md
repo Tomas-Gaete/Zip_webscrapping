@@ -5,7 +5,7 @@ Antes de seguir estas instrucciones, considere que esto asume que ha clonado est
 
 Para que este webscraping funcione, puede seguir estas instrucciones:
 
-1. Asegúrese de que Python esté instalado y ejecute `pip install selenium`.
+1. Después de clonar o descargar el repositorio, asegúrese de que Python esté instalado y ejecute `pip install -r requirements.txt` para descargar todas las dependencias.
 
 2. Necesita instalar un controlador de navegador para el navegador correspondiente. Como este proyecto se creó con Chrome, para que este código funcione, debe instalar un chromedriver compatible con su sistema operativo desde esta página: https://googlechromelabs.github.io/chrome-for-testing/#stable (asegúrese de copiar la URL correspondiente y, después de pegarla en el cuadro de búsqueda de su navegador, debería descargar un archivo zip).
 

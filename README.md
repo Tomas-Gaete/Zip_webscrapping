@@ -5,7 +5,7 @@ Before following this instructions consider that this asumes you have either clo
 
 To make this webscraping work you can follow this instructions:
 
-1. Make sure Python is installed and run `pip install selenium`
+1. After cloning or downloading the repository, make sure Python is installed and run `pip install -r requirements.txt` to download all dependencies
 
 2. You need to install a browser driver for the corresponding browser, as this project was created with chrome to make this code work
 you need to install a working chromedriver for your OS from this page https://googlechromelabs.github.io/chrome-for-testing/#stable (make sure you copy the corresponding url and after pasting it in the searchbox of your browser it should download a zip file)
